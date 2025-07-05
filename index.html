@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КОДД - цифровое оформление</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="fullscreenGif" class="fullscreen-gif">
+        <span class="close-fullscreen">×</span>
+        <img id="fullscreenGifImage" src="" alt="">
+        <div id="fullscreenGifCaption" class="gif-caption"></div>
+    </div>
+
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="modal-close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">КОДД</div>
+            <div class="tagline">диджитал оформление бизнеса</div>
+        </div>
+
+        <div class="stories-wrapper">
+            <div class="stories-container">
+                <div class="story" data-index="1">
+                    <div class="story-gif-container">
+                        <img src="Gifs/money.gif" class="story-gif" alt="Эквайринг">
+                    </div>
+                    <div class="story-text">Подключаем эквайринг</div>
+                </div>
+                <div class="story" data-index="2">
+                    <div class="story-gif-container">
+                        <img src="Gifs/stats.gif" class="story-gif" alt="Статистика">
+                    </div>
+                    <div class="story-text">Расширенная статистика</div>
+                </div>
+                <div class="story" data-index="3">
+                    <div class="story-gif-container">
+                        <img src="Gifs/code.gif" class="story-gif" alt="Индивидуальный код">
+                    </div>
+                    <div class="story-text">Индивидуальный код</div>
+                </div>
+                <div class="story" data-index="4">
+                    <div class="story-gif-container">
+                        <img src="Gifs/design.gif" class="story-gif" alt="Дизайн">
+                    </div>
+                    <div class="story-text">Лучший дизайн</div>
+                </div>
+                <div class="story" data-index="5">
+                    <div class="story-gif-container">
+                        <img src="Gifs/cool.gif" class="story-gif" alt="Крутые">
+                    </div>
+                    <div class="story-text">Мы просто крутые</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="btn" id="orderBtn">Оставить заявку</button>
+            <button class="btn btn-secondary" id="supportBtn">Тех. поддержка</button>
+            <button class="btn btn-secondary" id="portfolioBtn">Примеры работ</button>
+        </div>
+
+        <!-- ✅ ВСТАВЛЕНО: секция с примерами -->
+        <div id="portfolioSection" style="display: none;" class="portfolio-section">
+            <h2 class="portfolio-title">Примеры работ</h2>
+            <div id="portfolioList" class="portfolio-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <div class="bottom-nav">
+        <button id="navMain" class="nav-btn active">Главное меню</button>
+        <button id="navPortfolio" class="nav-btn">Примеры Работ</button>
+        <button id="navDummy" class="nav-btn">Личный кабинет</button>
+    </div>
+</body>
+</html>
