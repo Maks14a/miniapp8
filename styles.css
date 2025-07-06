@@ -447,15 +447,32 @@ body {
 }
 
 .portfolio-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 10px;
+  max-height: 60vh;           /* ограничиваем высоту */
+  overflow-y: auto;           /* включаем вертикальный скролл */
+  padding-right: 6px;         /* чуть-чуть отступ, чтобы скроллбар не прилипал */
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
+
+.portfolio-video {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #000;
+  display: block;
+}
+
+
 
 .portfolio-gif {
   width: 100%;
-  max-height: 250px;
-  object-fit: cover;
+  max-height: none;
+  height: auto;
+  object-fit: contain;
   border-radius: 10px;
+  display: block;
 }
