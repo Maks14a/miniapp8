@@ -3,104 +3,139 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-/*  ---  НАСТРОЙКА  ----------------------------------------- *
- *  Мини-App живёт на Vercel:  https://miniapp8.vercel.app
- *  Отдаём API с того же домена через Serverless-route
- *  (создай на Vercel файл  /api/examples.js  → JSON из БД)
- *  Тогда CORS-проблем нет, и ссылка https://miniapp8.vercel.app/api/examples
- *  будет доступна всем пользователям.
- *  --------------------------------------------------------- */
-const API_URL = "https://miniapp8.vercel.app/api/examples";   // ← ничего больше менять не надо
-
 /*  Stories (статический контент)  */
 const storiesContent = [
-  { title: "Подключаем эквайринг",  description: "Быстрое подключение платежных систем …" },
-  { title: "Расширенная статистика", description: "Детальная аналитика по всем аспектам …" },
-  { title: "Индивидуальный код",     description: "Разработка уникальных решений …" },
-  { title: "Лучший дизайн",          description: "Современный UI/UX дизайн для максимальной конверсии." },
-  { title: "Мы просто крутые",       description: "Профессиональный подход, креативные решения …" }
+  { title: "Подключаем эквайринг",
+    description: "Быстрое подключение платежных систем …" },
+  { title: "Расширенная статистика",
+    description: "Детальная аналитика по всем аспектам …" },
+  { title: "Индивидуальный код",
+    description: "Разработка уникальных решений …" },
+  { title: "Лучший дизайн",
+    description: "Современный UI/UX дизайн для максимальной конверсии." },
+  { title: "Мы просто крутые",
+    description: "Профессиональный подход, креативные решения …" }
 ];
 
-/* ---------- helper-функции для fullscreen stories ---------- */
-let gifPreviewTimeout, currentStoryIndex = null;
+/*  Preview helpers  */
+let gifPreviewTimeout;
+let currentStoryIndex = null;
 
-function showFullscreenStory(i){
-  const s = storiesContent[i-1];
-  const g = document.querySelector(`.story[data-index="${i}"] .story-gif`);
-  document.getElementById("fullscreenGifImage").src = g.src;
-  document.getElementById("modalTitle").textContent = s.title;
-  document.getElementById("modalText").textContent  = s.description;
+/*  Полноэкранный просмотр истории  */
+function showFullscreenStory(index) {
+  const story = storiesContent[index - 1];
+  const gif   = document.querySelector(`.story[data-index="${index}"] .story-gif`);
+  document.getElementById("fullscreenGifImage").src = gif.src;
+  document.getElementById("modalTitle").textContent = story.title;
+  document.getElementById("modalText").textContent  = story.description;
   document.getElementById("fullscreenGif").style.display = "flex";
   document.getElementById("storyModal").style.display    = "flex";
-  currentStoryIndex = i;
+  currentStoryIndex = index;
 }
-const closeFullscreenStory = () =>{
+function closeFullscreenStory() {
   document.getElementById("fullscreenGif").style.display = "none";
   document.getElementById("storyModal").style.display    = "none";
   currentStoryIndex = null;
-};
-const startGifPreview = i => gifPreviewTimeout = setTimeout(()=>showFullscreenStory(i),300);
-const endGifPreview   = () => clearTimeout(gifPreviewTimeout);
-const showStory       = i =>{
-  const el=document.querySelector(`.story[data-index="${i}"]`);
-  el.style.transform="scale(0.95)";
-  setTimeout(()=>{el.style.transform="scale(1)"; showFullscreenStory(i);},150);
-};
+}
 
-/* ---------- кнопки “Оставить заявку / Поддержка” ---------- */
+function startGifPreview(i){gifPreviewTimeout=setTimeout(()=>showFullscreenStory(i),300);}
+function endGifPreview(){clearTimeout(gifPreviewTimeout);}
+
+function showStory(index){
+  const s=document.querySelector(`.story[data-index="${index}"]`);
+  s.style.transform="scale(0.95)";
+  setTimeout(()=>{s.style.transform="scale(1)";showFullscreenStory(index);},150);
+}
+
+/*  Заявка / поддержка  */
 function showOrderForm(){
   setActiveTab("orderBtn");
   document.getElementById("loader").style.display="flex";
   setTimeout(()=>{document.getElementById("loader").style.display="none";
-    alert("Заполните форму заявки — мы свяжемся с вами!");
+    alert("Заполните форму заявки, с вами свяжутся в ближайшее время!");
   },800);
 }
-const openSupport = ()=>{ setActiveTab("supportBtn"); window.open("https://t.me/kodd_support","_blank"); };
+const openSupport = ()=>{ setActiveTab("supportBtn");
+  window.open("https://t.me/kodd_support","_blank");
+};
 
 /* ─────────   ПРИМЕРЫ РАБОТ   ───────── */
-async function loadExamples(){
+
+/*  Загружаем из бекенда /examples  */
+async function loadExamples() {
   const list = document.getElementById("portfolioList");
   list.innerHTML = "";
-  try{
-    const resp = await fetch(API_URL);
-    const data = await resp.json();                       // [{bot_link, description}]
-    data.forEach(ex=>{
-      list.insertAdjacentHTML("beforeend",
-        `<div class="portfolio-item">
-           <img src="${ex.bot_link}" alt="preview">
-           <div class="portfolio-name">${ex.description}</div>
-         </div>`);
+
+  try {
+    const r = await fetch("http://127.0.0.1:8000/examples");
+    const arr = await r.json();
+
+    arr.forEach(ex => {
+      const mediaTag = ex.gif_path.endsWith(".mp4")
+        ? `<video class="portfolio-gif" src="http://127.0.0.1:8000/static/${ex.gif_path}" autoplay loop muted playsinline></video>`
+        : `<img class="portfolio-gif" src="http://127.0.0.1:8000/static/${ex.gif_path}" alt="gif-preview">`;
+
+      list.insertAdjacentHTML("beforeend", `
+        <div class="portfolio-item">
+          <div class="bot-info">
+            <img class="avatar"
+                 src="https://t.me/i/userpic/320/${ex.bot_name.replace('@', '')}.jpg"
+                 onerror="this.src='Gifs/default-avatar.png'"
+                 alt="bot-avatar">
+            <a class="bot-name"
+               href="https://t.me/${ex.bot_name.replace('@', '')}"
+               target="_blank">${ex.bot_name}</a>
+          </div>
+          <div class="portfolio-description">${ex.description}</div>
+          ${mediaTag}
+        </div>
+      `);
     });
-    if(!data.length) list.textContent = "Пока пусто.";
-  }catch(err){
-    console.error("Ошибка /examples →", err);
-    list.textContent = "Не удалось загрузить примеры.";
+
+    if (!arr.length) list.textContent = "Пока пусто.";
+  } catch (e) {
+    console.error("Не смог получить /examples →", e);
+    list.textContent = "Ошибка загрузки примеров.";
   }
 }
+
+
+/*  Показать секцию портфолио  */
 function showPortfolio(){
   setActiveTab("portfolioBtn");
   document.querySelector(".stories-wrapper").style.display="none";
   document.getElementById("portfolioSection").style.display="block";
   document.getElementById("loader").style.display="flex";
-  loadExamples().finally(()=>document.getElementById("loader").style.display="none");
+  loadExamples().finally(()=>{
+    document.getElementById("loader").style.display="none";
+  });
 }
 
-/* ---------- визуальные вкладки ---------- */
-function setActiveTab(id){
-  document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
-  const btn=document.getElementById(id); if(btn) btn.classList.add("active");
-  if(id!=="portfolioBtn") document.getElementById("portfolioSection").style.display="none";
+/*  Tab-highlight  */
+function setActiveTab(id) {
+  document.querySelectorAll(".btn").forEach(b => b.classList.remove("active"));
+  const a = document.getElementById(id); if (a) a.classList.add("active");
+
+  const isPortfolio = id === "portfolioBtn";
+
+  document.querySelector(".button-container").style.display = isPortfolio ? "none" : "flex";
+  document.getElementById("portfolioSection").style.display = isPortfolio ? "block" : "none";
+  document.querySelector(".stories-wrapper").style.display = isPortfolio ? "none" : "flex";
 }
+
+
+
+
 function setBottomActive(id){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-/* ---------- swipe навигация ---------- */
+/*  Swipe (fullscreen)  */
 function setupSwipeNavigation(){
   const box=document.getElementById("fullscreenGif");
   let sx=0, ex=0;
-  box.addEventListener("touchstart",e=>sx=e.changedTouches[0].screenX,{passive:true});
+  box.addEventListener("touchstart",e=>{sx=e.changedTouches[0].screenX;},{passive:true});
   box.addEventListener("touchend",e=>{
     if(!currentStoryIndex) return;
     ex=e.changedTouches[0].screenX;
@@ -112,9 +147,11 @@ function setupSwipeNavigation(){
   },{passive:true});
 }
 
-/* ---------- предзагрузка иконок ---------- */
+/*  Предзагрузка иконок  */
 function preloadImages(){
-  ["money","stats","code","design","cool"].forEach(x=>new Image().src=`Gifs/${x}.gif`);
+  ["money","stats","code","design","cool"].forEach(x=>{
+    new Image().src=`Gifs/${x}.gif`;
+  });
 }
 
 /* ─────────  ЗАПУСК  ───────── */
@@ -131,6 +168,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   /* нижние вкладки */
   document.getElementById("navMain").addEventListener("click",()=>{
     setBottomActive("navMain");
+    setActiveTab("mainMenu");
     document.querySelector(".stories-wrapper").style.display="flex";
     document.getElementById("portfolioSection").style.display="none";
   });
@@ -150,7 +188,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 
   /* модалки */
-  document.querySelector(".modal-close")      .addEventListener("click",closeFullscreenStory);
+  document.querySelector(".modal-close").addEventListener("click",closeFullscreenStory);
   document.querySelector(".close-fullscreen").addEventListener("click",closeFullscreenStory);
   document.getElementById("fullscreenGif").addEventListener("click",e=>{
     if(e.target===document.getElementById("fullscreenGif")) closeFullscreenStory();
@@ -164,5 +202,5 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   /* стартовый лоадер */
   document.getElementById("loader").style.display="flex";
-  setTimeout(()=>document.getElementById("loader").style.display="none",800);
+  setTimeout(()=>{document.getElementById("loader").style.display="none";},800);
 });
